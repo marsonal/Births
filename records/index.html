@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>سجلات المواليد</title>
+  <script src="../supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f6f2;
+      --panel: #ffffff;
+      --border: #d6e1d8;
+      --border-strong: #b5c8ba;
+      --text: #173425;
+      --muted: #607365;
+      --brand: #2d6040;
+      --brand-soft: #edf6ef;
+      --danger: #b43636;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #ffffff 0%, var(--bg) 58%);
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    }
+
+    .page {
+      width: min(980px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 22px 0 40px;
+    }
+
+    .hero,
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 18px 40px rgba(27, 52, 37, 0.08);
+    }
+
+    .hero {
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.3;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .card {
+      padding: 18px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .field input {
+      width: 100%;
+      min-height: 54px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(45, 96, 64, 0.12);
+    }
+
+    .actions,
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .actions button,
+    .toolbar button {
+      min-height: 48px;
+      border: none;
+      border-radius: 14px;
+      padding: 0 16px;
+      font-size: 15px;
+      font-weight: 900;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, #2d6040, #46895b);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #edf5ef;
+      color: var(--brand);
+    }
+
+    .danger {
+      background: #fff2f2;
+      color: var(--danger);
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--brand-soft);
+      border: 1px solid var(--border);
+      color: var(--brand);
+      font-size: 14px;
+      line-height: 1.8;
+      font-weight: 800;
+    }
+
+    .status.is-error {
+      background: #fff4f4;
+      border-color: #f0c5c5;
+      color: var(--danger);
+    }
+
+    .status.is-hidden,
+    .is-hidden {
+      display: none !important;
+    }
+
+    .toolbar {
+      margin-bottom: 14px;
+      justify-content: space-between;
+    }
+
+    .toolbar .grow {
+      flex: 1 1 240px;
+    }
+
+    .toolbar input {
+      width: 100%;
+      min-height: 48px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    .records-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .record {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fbfdfb;
+    }
+
+    .record-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .record-title {
+      font-weight: 900;
+      font-size: 15px;
+      line-height: 1.8;
+      word-break: break-word;
+    }
+
+    .record-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .record-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .record-actions button {
+      min-height: 42px;
+      border: none;
+      border-radius: 12px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 900;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .empty {
+      padding: 18px;
+      border: 1px dashed var(--border-strong);
+      border-radius: 18px;
+      background: #fafcfb;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(100% - 12px, 980px);
+      }
+
+      .hero,
+      .card {
+        border-radius: 18px;
+      }
+
+      .hero h1 {
+        font-size: 24px;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      .toolbar > * {
+        width: 100%;
+      }
+
+      .record-head {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <h1>سجلات المواليد</h1>
+      <p>هذه الصفحة مخصصة لك فقط لمراجعة ملفات تسجيل المواليد المحفوظة على Supabase وتنزيلها أو حذفها بعد المراجعة.</p>
+    </section>
+
+    <section id="statusBox" class="status is-hidden"></section>
+
+    <section id="loginCard" class="card">
+      <div class="stack">
+        <div class="field">
+          <label for="adminEmail">البريد الإلكتروني</label>
+          <input id="adminEmail" type="email" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="adminPassword">كلمة المرور</label>
+          <input id="adminPassword" type="password" autocomplete="current-password">
+        </div>
+        <div class="actions">
+          <button id="loginButton" class="primary" type="button">دخول</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="recordsCard" class="card is-hidden">
+      <div class="toolbar">
+        <input id="searchInput" class="grow" type="search" placeholder="ابحث باسم الملف">
+        <button id="refreshButton" class="secondary" type="button">تحديث</button>
+        <button id="logoutButton" class="danger" type="button">خروج</button>
+      </div>
+      <div id="recordsList" class="records-list"></div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var config = window.BIRTH_LOCAL_SUPABASE_CONFIG || {};
+      var state = {
+        client: null,
+        session: null,
+        files: []
+      };
+
+      var statusBox = document.getElementById("statusBox");
+      var loginCard = document.getElementById("loginCard");
+      var recordsCard = document.getElementById("recordsCard");
+      var emailInput = document.getElementById("adminEmail");
+      var passwordInput = document.getElementById("adminPassword");
+      var loginButton = document.getElementById("loginButton");
+      var refreshButton = document.getElementById("refreshButton");
+      var logoutButton = document.getElementById("logoutButton");
+      var searchInput = document.getElementById("searchInput");
+      var recordsList = document.getElementById("recordsList");
+
+      function showStatus(message, tone) {
+        if (!message) {
+          statusBox.textContent = "";
+          statusBox.classList.add("is-hidden");
+          statusBox.classList.remove("is-error");
+          return;
+        }
+
+        statusBox.textContent = message;
+        statusBox.classList.remove("is-hidden");
+        statusBox.classList.toggle("is-error", tone === "error");
+      }
+
+      function isConfigured() {
+        return !!(String(config.url || "").trim() &&
+          String(config.anonKey || "").trim() &&
+          String(config.bucket || "").trim() &&
+          String(config.adminEmail || "").trim() &&
+          window.supabase &&
+          typeof window.supabase.createClient === "function");
+      }
+
+      function isAdminEmail(email) {
+        return String(email || "").trim().toLowerCase() === String(config.adminEmail || "").trim().toLowerCase();
+      }
+
+      function getClient() {
+        if (state.client) {
+          return state.client;
+        }
+
+        state.client = window.supabase.createClient(config.url, config.anonKey, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+          }
+        });
+        return state.client;
+      }
+
+      function renderLoggedOut() {
+        loginCard.classList.remove("is-hidden");
+        recordsCard.classList.add("is-hidden");
+        state.files = [];
+        recordsList.innerHTML = "";
+      }
+
+      function renderLoggedIn() {
+        loginCard.classList.add("is-hidden");
+        recordsCard.classList.remove("is-hidden");
+      }
+
+      function formatDate(value) {
+        if (!value) {
+          return "بدون تاريخ";
+        }
+
+        var date = new Date(value);
+        if (isNaN(date.getTime())) {
+          return value;
+        }
+
+        return date.toLocaleString("ar-EG");
+      }
+
+      function buildRecordPath(fileName) {
+        var folder = String(config.recordsFolder || "records").replace(/^\/+|\/+$/g, "") || "records";
+        return folder + "/" + fileName;
+      }
+
+      function renderRecords() {
+        var query = String(searchInput.value || "").trim().toLowerCase();
+        var visibleFiles = state.files.filter(function (item) {
+          return !query || String(item.name || "").toLowerCase().indexOf(query) !== -1;
+        });
+
+        recordsList.innerHTML = "";
+        if (!visibleFiles.length) {
+          var empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = state.files.length ? "لا توجد نتائج مطابقة." : "لا توجد ملفات محفوظة داخل records حتى الآن.";
+          recordsList.appendChild(empty);
+          return;
+        }
+
+        visibleFiles.forEach(function (item) {
+          var row = document.createElement("div");
+          var head = document.createElement("div");
+          var title = document.createElement("div");
+          var meta = document.createElement("div");
+          var actions = document.createElement("div");
+          var downloadButton = document.createElement("button");
+          var deleteButton = document.createElement("button");
+
+          row.className = "record";
+          head.className = "record-head";
+          title.className = "record-title";
+          meta.className = "record-meta";
+          actions.className = "record-actions";
+
+          title.textContent = item.name;
+          meta.textContent = "آخر تعديل: " + formatDate(item.updated_at || item.created_at);
+
+          downloadButton.type = "button";
+          downloadButton.className = "secondary";
+          downloadButton.textContent = "تنزيل";
+          downloadButton.addEventListener("click", function () {
+            downloadRecord(item.name);
+          });
+
+          deleteButton.type = "button";
+          deleteButton.className = "danger";
+          deleteButton.textContent = "حذف";
+          deleteButton.addEventListener("click", function () {
+            deleteRecord(item.name);
+          });
+
+          actions.appendChild(downloadButton);
+          actions.appendChild(deleteButton);
+          head.appendChild(title);
+          head.appendChild(actions);
+          row.appendChild(head);
+          row.appendChild(meta);
+          recordsList.appendChild(row);
+        });
+      }
+
+      async function loadRecords() {
+        var response;
+        var folder = String(config.recordsFolder || "records").replace(/^\/+|\/+$/g, "") || "records";
+
+        showStatus("جارٍ تحميل الملفات...", "");
+        response = await getClient().storage.from(config.bucket).list(folder, {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: "name", order: "desc" }
+        });
+
+        if (response.error) {
+          showStatus("تعذر تحميل الملفات: " + response.error.message, "error");
+          return;
+        }
+
+        state.files = (response.data || []).filter(function (item) {
+          return item && item.name && item.id;
+        });
+        renderRecords();
+        showStatus("تم تحميل " + state.files.length + " ملف.", "");
+      }
+
+      async function downloadRecord(fileName) {
+        var response = await getClient().storage.from(config.bucket).download(buildRecordPath(fileName));
+        var url;
+        var anchor;
+
+        if (response.error) {
+          showStatus("تعذر تنزيل الملف: " + response.error.message, "error");
+          return;
+        }
+
+        url = URL.createObjectURL(response.data);
+        anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = fileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(function () {
+          URL.revokeObjectURL(url);
+        }, 1000);
+      }
+
+      async function deleteRecord(fileName) {
+        var confirmed = window.confirm("سيتم حذف الملف نهائيًا من Supabase. هل تريد المتابعة؟");
+        var response;
+        if (!confirmed) {
+          return;
+        }
+
+        response = await getClient().storage.from(config.bucket).remove([buildRecordPath(fileName)]);
+        if (response.error) {
+          showStatus("تعذر حذف الملف: " + response.error.message, "error");
+          return;
+        }
+
+        showStatus("تم حذف الملف بنجاح.", "");
+        loadRecords();
+      }
+
+      async function enforceAdminSession() {
+        var response;
+        var session;
+        if (!isConfigured()) {
+          showStatus("أكمل إعدادات Supabase داخل الملف supabase-config.js أولًا.", "error");
+          renderLoggedOut();
+          return;
+        }
+
+        response = await getClient().auth.getSession();
+        session = response && response.data ? response.data.session : null;
+        state.session = session;
+
+        if (!session || !session.user || !isAdminEmail(session.user.email)) {
+          if (session && session.user) {
+            await getClient().auth.signOut();
+            showStatus("هذا الحساب غير مصرح له بدخول records.", "error");
+          } else {
+            showStatus("", "");
+          }
+          renderLoggedOut();
+          return;
+        }
+
+        renderLoggedIn();
+        emailInput.value = session.user.email || "";
+        passwordInput.value = "";
+        loadRecords();
+      }
+
+      async function login() {
+        var email = String(emailInput.value || "").trim();
+        var password = String(passwordInput.value || "");
+        var response;
+
+        if (!isConfigured()) {
+          showStatus("أكمل إعدادات Supabase داخل الملف supabase-config.js أولًا.", "error");
+          return;
+        }
+
+        if (!email || !password) {
+          showStatus("أدخل البريد الإلكتروني وكلمة المرور.", "error");
+          return;
+        }
+
+        if (!isAdminEmail(email)) {
+          showStatus("هذا البريد الإلكتروني ليس البريد الإداري المحدد في الإعدادات.", "error");
+          return;
+        }
+
+        showStatus("جارٍ تسجيل الدخول...", "");
+        response = await getClient().auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (response.error) {
+          showStatus("فشل تسجيل الدخول: " + response.error.message, "error");
+          return;
+        }
+
+        showStatus("تم تسجيل الدخول.", "");
+        enforceAdminSession();
+      }
+
+      async function logout() {
+        await getClient().auth.signOut();
+        showStatus("تم تسجيل الخروج.", "");
+        renderLoggedOut();
+      }
+
+      loginButton.addEventListener("click", login);
+      refreshButton.addEventListener("click", loadRecords);
+      logoutButton.addEventListener("click", logout);
+      searchInput.addEventListener("input", renderRecords);
+      passwordInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          login();
+        }
+      });
+
+      if (isConfigured()) {
+        emailInput.value = String(config.adminEmail || "").trim();
+      }
+      enforceAdminSession();
+    })();
+  </script>
+</body>
+</html>

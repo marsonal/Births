@@ -3,8 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>سجلات المواليد</title>
-  <script src="../supabase-config.js"></script>
+  <script>
+    (function () {
+      var version = "20260420-1";
+      var url = new URL(window.location.href);
+      if (url.searchParams.get("v") !== version) {
+        url.searchParams.set("v", version);
+        window.location.replace(url.toString());
+      }
+    })();
+  </script>
+  <script src="../supabase-config.js?v=20260420-1"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {

@@ -397,10 +397,58 @@
         return folder + "/" + fileName;
       }
 
+      function base64UrlToUtf8(value) {
+        var text = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+        var padding = text.length % 4;
+        var binary;
+        var bytes;
+        var i;
+
+        if (!text || typeof window.atob !== "function") {
+          return "";
+        }
+
+        if (padding) {
+          text += "====".slice(padding);
+        }
+
+        try {
+          binary = window.atob(text);
+          if (window.TextDecoder) {
+            bytes = new Uint8Array(binary.length);
+            for (i = 0; i < binary.length; i += 1) {
+              bytes[i] = binary.charCodeAt(i);
+            }
+            return new window.TextDecoder().decode(bytes);
+          }
+          return decodeURIComponent(escape(binary));
+        } catch (error) {
+          return "";
+        }
+      }
+
+      function parseStoredRecordItem(item) {
+        var storageName = String(item && item.name || "");
+        var markerIndex = storageName.indexOf("--");
+        var leafName = markerIndex === -1 ? storageName : storageName.slice(markerIndex + 2);
+        var extensionMatch = leafName.match(/(\.[A-Za-z0-9]+)$/);
+        var extension = extensionMatch ? extensionMatch[1] : "";
+        var stem = extensionMatch ? leafName.slice(0, -extension.length) : leafName;
+        var decodedStem = /^name64-/.test(stem) ? base64UrlToUtf8(stem.slice(7)) : "";
+        var displayName = (decodedStem ? decodedStem + extension : leafName) || storageName;
+
+        return Object.assign({}, item, {
+          storageName: storageName,
+          displayName: displayName,
+          downloadName: displayName,
+          searchText: [displayName, leafName, storageName].join(" ").toLowerCase()
+        });
+      }
+
       function renderRecords() {
         var query = String(searchInput.value || "").trim().toLowerCase();
         var visibleFiles = state.files.filter(function (item) {
-          return !query || String(item.name || "").toLowerCase().indexOf(query) !== -1;
+          return !query || String(item.searchText || "").indexOf(query) !== -1;
         });
 
         recordsList.innerHTML = "";
@@ -427,21 +475,21 @@
           meta.className = "record-meta";
           actions.className = "record-actions";
 
-          title.textContent = item.name;
+          title.textContent = item.displayName || item.storageName || item.name;
           meta.textContent = "آخر تعديل: " + formatDate(item.updated_at || item.created_at);
 
           downloadButton.type = "button";
           downloadButton.className = "secondary";
           downloadButton.textContent = "تنزيل";
           downloadButton.addEventListener("click", function () {
-            downloadRecord(item.name);
+            downloadRecord(item);
           });
 
           deleteButton.type = "button";
           deleteButton.className = "danger";
           deleteButton.textContent = "حذف";
           deleteButton.addEventListener("click", function () {
-            deleteRecord(item.name);
+            deleteRecord(item, deleteButton);
           });
 
           actions.appendChild(downloadButton);
@@ -472,12 +520,16 @@
 
         state.files = (response.data || []).filter(function (item) {
           return item && item.name && item.id;
+        }).map(function (item) {
+          return parseStoredRecordItem(item);
         });
         renderRecords();
         showStatus("تم تحميل " + state.files.length + " ملف.", "");
       }
 
-      async function downloadRecord(fileName) {
+      async function downloadRecord(item) {
+        var fileName = item && item.storageName ? item.storageName : String(item || "");
+        var downloadName = item && item.downloadName ? item.downloadName : fileName;
         var response = await getClient().storage.from(config.bucket).download(buildRecordPath(fileName));
         var url;
         var anchor;
@@ -490,7 +542,7 @@
         url = URL.createObjectURL(response.data);
         anchor = document.createElement("a");
         anchor.href = url;
-        anchor.download = fileName;
+        anchor.download = downloadName;
         document.body.appendChild(anchor);
         anchor.click();
         anchor.remove();
@@ -499,21 +551,36 @@
         }, 1000);
       }
 
-      async function deleteRecord(fileName) {
-        var confirmed = window.confirm("سيتم حذف الملف نهائيًا من Supabase. هل تريد المتابعة؟");
+      async function deleteRecord(item, button) {
+        var fileName = item && item.storageName ? item.storageName : String(item || "");
+        var displayName = item && item.displayName ? item.displayName : fileName;
+        var confirmed = window.confirm("سيتم حذف الملف \"" + displayName + "\" نهائيًا من Supabase. هل تريد المتابعة؟");
         var response;
         if (!confirmed) {
           return;
         }
 
-        response = await getClient().storage.from(config.bucket).remove([buildRecordPath(fileName)]);
-        if (response.error) {
-          showStatus("تعذر حذف الملف: " + response.error.message, "error");
-          return;
+        if (button) {
+          button.disabled = true;
         }
 
-        showStatus("تم حذف الملف بنجاح.", "");
-        loadRecords();
+        try {
+          response = await getClient().storage.from(config.bucket).remove([buildRecordPath(fileName)]);
+          if (response.error) {
+            showStatus("تعذر حذف الملف: " + response.error.message, "error");
+            return;
+          }
+
+          state.files = state.files.filter(function (entry) {
+            return entry.storageName !== fileName;
+          });
+          renderRecords();
+          showStatus("تم حذف الملف بنجاح.", "");
+        } finally {
+          if (button) {
+            button.disabled = false;
+          }
+        }
       }
 
       async function enforceAdminSession() {

@@ -1,0 +1,218 @@
+{
+  "meta": {
+    "draftType": "birth-single-v1",
+    "schemaVersion": "1.1.0",
+    "readyForImport": false,
+    "missingFields": [
+      "نوع تليفون المبلغ"
+    ],
+    "savedAt": "2026-04-24T01:08:26.311Z",
+    "sourcePage": "birth/self-service-mobile"
+  },
+  "birth": {
+    "name": "محمد",
+    "gender": {
+      "value": "ذكر",
+      "text": "ذكر"
+    },
+    "date": {
+      "day": "24",
+      "month": "4",
+      "year": "2026"
+    },
+    "time": {
+      "hour": "3",
+      "minute": "53"
+    },
+    "twins": {
+      "hasTwins": false,
+      "count": "",
+      "children": []
+    },
+    "marriageDuration": {
+      "months": "6",
+      "years": "9"
+    }
+  },
+  "father": {
+    "nationality": {
+      "value": "11111",
+      "text": "مصر"
+    },
+    "ssn": "30002018800273",
+    "issueNumber": "",
+    "issueType": "",
+    "names": {
+      "first": "أحمد",
+      "second": "السيد",
+      "third": "محمد",
+      "last": "مرسى"
+    },
+    "job": "مصر",
+    "religion": {
+      "value": "1",
+      "text": "مسلم"
+    },
+    "phone": "01018005562",
+    "education": {
+      "value": "142",
+      "text": "تعليم متوسط"
+    },
+    "residence": {
+      "city": {
+        "value": "الغربية",
+        "text": "الغربية"
+      },
+      "subCity": {
+        "value": "مركز طنطا",
+        "text": "مركز طنطا"
+      },
+      "village": {
+        "value": "اخناواى",
+        "text": "اخناواى"
+      },
+      "details": "اخناواى"
+    },
+    "currentResidence": {
+      "sameAsResidence": true,
+      "city": null,
+      "subCity": null,
+      "village": null,
+      "details": "اخناواى"
+    }
+  },
+  "mother": {
+    "nationality": {
+      "value": "11111",
+      "text": "مصر"
+    },
+    "ssn": "29911081601528",
+    "issueNumber": "",
+    "issueType": "",
+    "names": {
+      "first": "تفنين",
+      "second": "تسب",
+      "third": "تسب",
+      "last": "تن"
+    },
+    "job": "نارو",
+    "religion": {
+      "value": "1",
+      "text": "مسلمة"
+    },
+    "phone": "01018005562",
+    "education": {
+      "value": "142",
+      "text": "تعليم متوسط"
+    },
+    "residence": {
+      "city": {
+        "value": "الغربية",
+        "text": "الغربية"
+      },
+      "subCity": {
+        "value": "مركز السنطه",
+        "text": "مركز السنطه"
+      },
+      "village": {
+        "value": "اشناواى",
+        "text": "اشناواى"
+      },
+      "details": "اشناواى"
+    },
+    "currentResidence": {
+      "sameAsResidence": true,
+      "city": null,
+      "subCity": null,
+      "village": null,
+      "details": "اشناواى"
+    }
+  },
+  "teller": {
+    "relation": {
+      "value": "16",
+      "text": "الاب"
+    },
+    "nationality": {
+      "value": "11111",
+      "text": "مصر"
+    },
+    "ssn": "30002018800273",
+    "issueNumber": "",
+    "issueType": "",
+    "names": {
+      "first": "أحمد",
+      "second": "السيد",
+      "third": "محمد",
+      "last": "مرسى"
+    },
+    "phoneType": null,
+    "phone": "01018005562",
+    "education": {
+      "value": "142",
+      "text": "تعليم متوسط"
+    },
+    "residence": {
+      "city": {
+        "value": "الغربية",
+        "text": "الغربية"
+      },
+      "subCity": {
+        "value": "مركز طنطا",
+        "text": "مركز طنطا"
+      },
+      "village": {
+        "value": "اخناواى",
+        "text": "اخناواى"
+      },
+      "details": "اخناواى"
+    },
+    "currentResidence": {
+      "sameAsResidence": true,
+      "city": null,
+      "subCity": null,
+      "village": null,
+      "details": "اخناواى"
+    }
+  },
+  "health": {
+    "placeOfBirth": {
+      "value": "29",
+      "text": "مستشفى"
+    },
+    "typeHospital": {
+      "value": "121",
+      "text": "خاص"
+    },
+    "hospital": {
+      "value": "1006",
+      "text": "مستشفى ابن سينا التخصصى"
+    },
+    "weight": {
+      "value": "32",
+      "text": "طبيعى"
+    },
+    "blood": {
+      "value": "132",
+      "text": "غير معلوم"
+    },
+    "birthOrder": {
+      "value": "204",
+      "text": "التاسع"
+    },
+    "birthOrders": [
+      {
+        "value": "204",
+        "text": "التاسع"
+      }
+    ],
+    "typeOfBirth": {
+      "value": "207",
+      "text": "ولاده قيصريه لبكريه"
+    },
+    "birthBy": {
+      "value": "35",
+      "text": "طبييب"
+    }
+  }
+}

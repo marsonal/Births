@@ -294,8 +294,8 @@
     <section id="loginCard" class="card">
       <div class="stack">
         <div class="field">
-          <label for="adminEmail">البريد الإلكتروني</label>
-          <input id="adminEmail" type="email" autocomplete="username">
+          <label for="adminEmail">كلمة الدخول</label>
+          <input id="adminEmail" type="text" autocomplete="username">
         </div>
         <div class="field">
           <label for="adminPassword">كلمة المرور</label>
@@ -329,6 +329,7 @@
       };
 
       var statusBox = document.getElementById("statusBox");
+      var ADMIN_USERNAME = "سعيد";
       var loginCard = document.getElementById("loginCard");
       var recordsCard = document.getElementById("recordsCard");
       var emailInput = document.getElementById("adminEmail");
@@ -567,11 +568,7 @@
       async function deleteRecord(item, button) {
         var fileName = item && item.storageName ? item.storageName : String(item || "");
         var displayName = item && item.displayName ? item.displayName : fileName;
-        var confirmed = window.confirm("سيتم حذف الملف \"" + displayName + "\" نهائيًا من Supabase. هل تريد المتابعة؟");
         var response;
-        if (!confirmed) {
-          return;
-        }
 
         if (button) {
           button.disabled = true;
@@ -621,13 +618,14 @@
         }
 
         renderLoggedIn();
-        emailInput.value = session.user.email || "";
+        emailInput.value = ADMIN_USERNAME;
         passwordInput.value = "";
         loadRecords();
       }
 
       async function login() {
-        var email = String(emailInput.value || "").trim();
+        var username = String(emailInput.value || "").trim();
+        var email = String(config.adminEmail || "").trim();
         var password = String(passwordInput.value || "");
         var response;
 
@@ -636,13 +634,18 @@
           return;
         }
 
-        if (!email || !password) {
-          showStatus("أدخل البريد الإلكتروني وكلمة المرور.", "error");
+        if (!username || !password) {
+          showStatus("أدخل كلمة الدخول وكلمة المرور.", "error");
           return;
         }
 
-        if (!isAdminEmail(email)) {
-          showStatus("هذا البريد الإلكتروني ليس البريد الإداري المحدد في الإعدادات.", "error");
+        if (username !== ADMIN_USERNAME) {
+          showStatus("كلمة الدخول غير صحيحة.", "error");
+          return;
+        }
+
+        if (!email) {
+          showStatus("البريد الإداري غير مضبوط داخل supabase-config.js.", "error");
           return;
         }
 
@@ -679,7 +682,7 @@
       });
 
       if (isConfigured()) {
-        emailInput.value = String(config.adminEmail || "").trim();
+        emailInput.value = ADMIN_USERNAME;
       }
       enforceAdminSession();
     })();
